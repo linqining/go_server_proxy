@@ -1,0 +1,2 @@
+ai:
+        * -> hello("world") -> "https://ai.12348.gov.cn"
