@@ -1,13 +1,17 @@
 package main
+
 import (
-    "bytes"
+    "compress/gzip"
+    "github.com/PuerkitoBio/goquery"
+    "strings"
+
     //"bytes"
     "fmt"
     "github.com/zalando/skipper/filters"
-    "io/ioutil"
     "io"
-    "compress/gzip"
+    "io/ioutil"
     "regexp"
+    "log"
 )
 
 type helloSpec struct {}
@@ -36,25 +40,24 @@ func (f *helloFilter) Request(ctx filters.FilterContext) {
 
 func (f *helloFilter) Response(ctx filters.FilterContext) {
     request_url := ctx.Request().URL
-    //fmt.Printf("请求的url是%s", request_url)
     app_reg := regexp.MustCompile(".*app\\..*\\.js")
-    if app_reg.MatchString(request_url.Path){
-        fmt.Printf("找到匹配的url%s", request_url)
 
+    if app_reg.MatchString(request_url.Path){
+        bodyRes, err := readRes(ctx)
+
+        if err!=nil{
+            fmt.Printf("读取错误%s", err)
+        }
+
+        replace_str := replaceDomain(bodyRes)
+
+        _, werr:=ctx.ResponseWriter().Write(replace_str)
+        if werr!=nil{
+            log.Print(werr)
+        }
     }
 
-    if ctx.Response().Header.Get("Content-Type")=="text/html" || app_reg.MatchString(request_url.Path){
-        //var reader io.ReadCloser
-        //var err error
-        //if ctx.Response().Header.Get("Content-Encoding") == "gzip" {
-        //    reader, err = gzip.NewReader(ctx.Response().Body)
-        //    if err != nil {
-        //        return
-        //    }
-        //} else {
-        //    reader = ctx.Response().Body
-        //}
-        //bodyRes, err := ioutil.ReadAll(reader)
+    if ctx.Response().Header.Get("Content-Type")=="text/html" {
         bodyRes, err := readRes(ctx)
 
         fmt.Println(ctx.Response().Header.Get("Content-Type"))
@@ -62,29 +65,47 @@ func (f *helloFilter) Response(ctx filters.FilterContext) {
         if err!=nil{
             fmt.Printf("读取错误%s", err)
         }
-        reg := regexp.MustCompile("https://ai.12348.gov.cn|https://newsystem.laway.cn")
 
-        replace_str := reg.ReplaceAll(bodyRes,[]byte("http://localhost:9090"))
+        replace_str := replaceDomain(bodyRes)
 
-        reg = regexp.MustCompile("ai.12348.gov.cn|newsystem.laway.cn")
+        doc, err := goquery.NewDocumentFromReader(strings.NewReader(string(replace_str)))
+        if err!=nil{
 
-        replace_str = reg.ReplaceAll(replace_str,[]byte("localhost:9090"))
+        }
+        if doc!=nil{
+            head := doc.Find("head")
+            head.AppendHtml(customCSS())
+        }
+        var result string
+        result, _ = doc.Html()
 
-        //reg2 := regexp.MustCompile("newsystem.laway.cn")
-
-        ctx.ResponseWriter().Write(replace_str)
+        _, err =ctx.ResponseWriter().Write([]byte(result))
+        if err!=nil{
+            log.Print(err)
+        }
     }
 }
 
-func gzipFast(a *[]byte) []byte {
-    var b bytes.Buffer
-    gz := gzip.NewWriter(&b)
-    if _, err := gz.Write(*a); err != nil {
-        gz.Close()
-        panic(err)
-    }
-    gz.Close()
-    return b.Bytes()
+func replaceDomain(res []byte) []byte {
+    reg := regexp.MustCompile("https://ai.12348.gov.cn")
+    replace_str := reg.ReplaceAll(res, []byte("http://localhost:9090"))
+
+    reg = regexp.MustCompile("ai.12348.gov.cn")
+    replace_str = reg.ReplaceAll(replace_str,[]byte("localhost:9090"))
+
+    reg = regexp.MustCompile("https://hrpay.laway.cn")
+    replace_str = reg.ReplaceAll(replace_str,[]byte("http://localhost:9090/hrpay"))
+
+    reg = regexp.MustCompile("hrpay.laway.cn")
+    replace_str = reg.ReplaceAll(replace_str,[]byte("localhost:9090/hrpay"))
+
+    reg = regexp.MustCompile("https://newsystem.laway.cn")
+    replace_str = reg.ReplaceAll(replace_str,[]byte("http://localhost:9090/newsystem"))
+
+    reg = regexp.MustCompile("newsystem.laway.cn")
+    replace_str = reg.ReplaceAll(replace_str,[]byte("localhost:9090/newsystem"))
+
+    return replace_str
 }
 
 func readRes(ctx filters.FilterContext)([]byte,error){
@@ -97,4 +118,8 @@ func readRes(ctx filters.FilterContext)([]byte,error){
     }
     bodyRes, err := ioutil.ReadAll(reader)
     return bodyRes, err
+}
+
+func customCSS()string{
+    return "<style>.advisory-info-main,.page-header,.pc-header,.pc-footer,.page-header-con,.footer-container,.advisory-main li:nth-child(n+17){display:none!important}</style>"
 }

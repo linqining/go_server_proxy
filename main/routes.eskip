@@ -1,2 +1,13 @@
 ai:
-        * -> hello("world") -> "https://ai.12348.gov.cn"
+        * -> hello("world") -> "https://ai.12348.gov.cn";
+
+icon:
+        Path("/hrpay/api/speed-front/file/download/*")
+        ->static("/hrpay/api/speed-front/file/download/","../public/taofa/icons")
+        -><shunt>;
+
+hrpay_mod:
+        Path("/hrpay/*")->modPath("^/hrpay/(.*)", "/$1")-> "https://hrpay.laway.cn";
+
+newsystem_mod:
+        Path("/newsystem/*")->modPath("^/newsystem/(.*)", "/$1")-> "https://newsystem.laway.cn";
