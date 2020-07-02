@@ -87,13 +87,13 @@ func (f *helloFilter) Response(ctx filters.FilterContext) {
 
 func replaceDomain(res []byte) []byte {
     reg := regexp.MustCompile("ai.12348.gov.cn")
-    replace_str := reg.ReplaceAll(res,[]byte("www.taofa.cn/znls"))
+    replace_str := reg.ReplaceAll(res,[]byte("ai.taofa.cn"))
 
     reg = regexp.MustCompile("hrpay.laway.cn")
-    replace_str = reg.ReplaceAll(replace_str,[]byte("www.taofa.cn/znls/hrpay"))
+    replace_str = reg.ReplaceAll(replace_str,[]byte("ai.taofa.cn/hrpay"))
 
     reg = regexp.MustCompile("newsystem.laway.cn")
-    replace_str = reg.ReplaceAll(replace_str,[]byte("www.taofa.cn/znls/newsystem"))
+    replace_str = reg.ReplaceAll(replace_str,[]byte("ai.taofa.cn/newsystem"))
 
     return replace_str
 }
