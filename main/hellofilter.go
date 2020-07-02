@@ -4,8 +4,6 @@ import (
     "compress/gzip"
     "github.com/PuerkitoBio/goquery"
     "strings"
-
-    //"bytes"
     "fmt"
     "github.com/zalando/skipper/filters"
     "io"
@@ -75,6 +73,7 @@ func (f *helloFilter) Response(ctx filters.FilterContext) {
         if doc!=nil{
             head := doc.Find("head")
             head.AppendHtml(customCSS())
+            head.Find("title").SetText("法律咨询")
         }
         var result string
         result, _ = doc.Html()
@@ -121,5 +120,6 @@ func readRes(ctx filters.FilterContext)([]byte,error){
 }
 
 func customCSS()string{
-    return "<style>.advisory-info-main,.page-header,.pc-header,.pc-footer,.page-header-con,.footer-container,.advisory-main li:nth-child(n+17){display:none!important}</style>"
+    return "<style>.advisory-info-main,.page-header,.pc-header,.pc-footer,.page-header-con,.footer-container,.advisory-main li:nth-child(n+17){display:none!important}</style>"+
+        "<style>.page-header-home,.page-banner,.tec,.advisory-icon-list li:nth-child(n+17){display:none !important}</style>"
 }
