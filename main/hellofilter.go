@@ -86,11 +86,21 @@ func (f *helloFilter) Response(ctx filters.FilterContext) {
 }
 
 func replaceDomain(res []byte) []byte {
-    reg := regexp.MustCompile("ai.12348.gov.cn")
-    replace_str := reg.ReplaceAll(res,[]byte("ai.taofa.cn"))
+    reg := regexp.MustCompile("https://ai.12348.gov.cn")
+    replace_str := reg.ReplaceAll(res,[]byte("http://ai.taofa.cn"))
+
+    reg = regexp.MustCompile("ai.12348.gov.cn")
+    replace_str = reg.ReplaceAll(replace_str,[]byte("ai.taofa.cn"))
+
+
+    reg = regexp.MustCompile("https://hrpay.laway.cn")
+    replace_str = reg.ReplaceAll(replace_str,[]byte("http://ai.taofa.cn/hrpay"))
 
     reg = regexp.MustCompile("hrpay.laway.cn")
     replace_str = reg.ReplaceAll(replace_str,[]byte("ai.taofa.cn/hrpay"))
+
+    reg = regexp.MustCompile("https://newsystem.laway.cn")
+    replace_str = reg.ReplaceAll(replace_str,[]byte("http://ai.taofa.cn/newsystem"))
 
     reg = regexp.MustCompile("newsystem.laway.cn")
     replace_str = reg.ReplaceAll(replace_str,[]byte("ai.taofa.cn/newsystem"))
