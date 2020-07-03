@@ -1,0 +1,6 @@
+domain: www.taofa.cn
+port: 9090
+cert_path_tls:  /home/xiao/cert/server.crt
+key_path_tls: /home/xiao/cert/server.key
+
+
